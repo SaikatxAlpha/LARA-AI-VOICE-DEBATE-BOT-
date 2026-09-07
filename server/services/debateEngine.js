@@ -18,37 +18,50 @@ export async function generateDebateResponse({
 }) {
   const groq = getGroqClient();
 
-  const completion = await groq.chat.completions.create({
-    model: "openai/gpt-oss-20b",
-    messages: [
-      {
-        role: "system",
-        content: DEBATE_SYSTEM_PROMPT
-      },
-      {
-        role: "user",
-        content: `
-CURRENT DEBATE TOPIC:
-${topic}
+  const messages = [
+    {
+      role: "system",
+      content: DEBATE_SYSTEM_PROMPT
+    },
+    {
+      role: "user",
+      content: `The debate topic is: ${topic}`
+    }
+  ];
 
-PREVIOUS DEBATE ROUNDS:
-${history || "This is the opening round. There are no previous arguments."}
+  if (history?.trim()) {
+    messages.push({
+      role: "user",
+      content: `Previous debate rounds:\n${history}`
+    });
+  }
 
-USER'S LATEST ARGUMENT:
-${userArgument}
-
-Analyze the user's latest argument in the context of the current debate topic and previous rounds.
-
-Respond as LARA's debate opponent.
-
-Follow the required response format exactly.
-`
-      }
-    ],
-    temperature: 0.7,
-    max_completion_tokens: 500
+  messages.push({
+    role: "user",
+    content: `The user's latest argument is:\n${userArgument}\n\nRespond as LARA's debate opponent. Give a strong counterargument and exactly one challenging question.`
   });
 
-  return completion.choices[0]?.message?.content?.trim() ||
-    "I could not generate a response.";
+  const completion = await groq.chat.completions.create({
+    model: "openai/gpt-oss-20b",
+    messages,
+    temperature: 0.7,
+    max_completion_tokens: 700
+  });
+
+  const message = completion.choices?.[0]?.message;
+
+  if (!message) {
+    throw new Error("Groq returned an empty response.");
+  }
+
+  const response =
+    typeof message.content === "string"
+      ? message.content.trim()
+      : "";
+
+  if (!response) {
+    throw new Error("Groq returned no text content.");
+  }
+
+  return response;
 }

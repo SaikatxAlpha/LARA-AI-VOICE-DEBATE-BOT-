@@ -17,7 +17,13 @@ export async function sendDebateArgument({
     })
   });
 
-  const data = await response.json();
+  let data;
+
+  try {
+    data = await response.json();
+  } catch {
+    throw new Error("The debate server returned an invalid response.");
+  }
 
   if (!response.ok) {
     throw new Error(data.message || "Failed to generate debate response");

@@ -50,53 +50,60 @@ function Debate() {
     };
   }, [selectedVoice]);
 
-  async function handleDebate() {
-    if (!topic.trim() || !argument.trim()) {
-      alert("Please enter a topic and argument.");
-      return;
-    }
-
-    setLoading(true);
-    setIsDebating(true);
-
-    const currentArgument = argument;
-
-    const history = [
-      ...messages,
-      {
-        role: "user",
-        text: currentArgument
-      }
-    ]
-      .map((message) => `${message.role}: ${message.text}`)
-      .join("\n");
-
-    try {
-      addMessage({
-        role: "user",
-        text: currentArgument
-      });
-
-      const result = await sendDebateArgument({
-        topic,
-        history,
-        userArgument: currentArgument
-      });
-
-      addMessage({
-        role: "ai",
-        text: result.response
-      });
-
-      speak(result.response);
-      setArgument("");
-    } catch (error) {
-      console.error(error);
-      alert(error.message);
-    } finally {
-      setLoading(false);
-    }
+async function handleDebate() {
+  if (loading) {
+    return;
   }
+
+  if (!topic.trim() || !argument.trim()) {
+    alert("Please enter a topic and argument.");
+    return;
+  }
+
+  const currentTopic = topic.trim();
+  const currentArgument = argument.trim();
+
+  setLoading(true);
+  setIsDebating(true);
+
+  const history = messages
+    .slice(-10)
+    .map((message) => {
+      const speaker = message.role === "user" ? "USER" : "LARA";
+      return `${speaker}: ${message.text}`;
+    })
+    .join("\n\n");
+
+  try {
+    const result = await sendDebateArgument({
+      topic: currentTopic,
+      history,
+      userArgument: currentArgument
+    });
+
+    if (!result?.response?.trim()) {
+      throw new Error("LARA returned an empty response.");
+    }
+
+    addMessage({
+      role: "user",
+      text: currentArgument
+    });
+
+    addMessage({
+      role: "ai",
+      text: result.response
+    });
+
+    setArgument("");
+    speak(result.response);
+  } catch (error) {
+    console.error("Debate request failed:", error);
+    alert(error.message || "Unable to get LARA's response.");
+  } finally {
+    setLoading(false);
+  }
+}
 
   function speak(text) {
     if (!("speechSynthesis" in window)) {
