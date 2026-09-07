@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useDebate } from "../context/DebateContext";
 import { sendDebateArgument } from "../services/api";
 import VoiceRecorder from "../components/VoiceRecorder";
+import ParticleField from "../components/ParticleField";
+import VoiceOverlay from "../components/VoiceOverlay";
 
 function Debate() {
   const {
@@ -140,9 +142,18 @@ function Debate() {
   }
 
   const round = Math.ceil(messages.length / 2);
+  const lastAiMessage = [...messages].reverse().find((m) => m.role === "ai");
 
   return (
     <div className="app">
+      <ParticleField active={speaking} />
+
+      <VoiceOverlay
+        open={speaking}
+        text={lastAiMessage ? lastAiMessage.text : "LARA is responding..."}
+        onStop={stopSpeaking}
+      />
+
       <header className="navbar">
         <div className="brand">
           <div className="brand-mark">L</div>
@@ -232,10 +243,10 @@ function Debate() {
         <section className="debate-area">
           <div className="debate-header">
             <div>
-              <div className="eyebrow">Your voice vs. LARA's logic</div>
-              <h1>Say it. Defend it.</h1>
+              <div className="eyebrow">no cap, just facts · you vs. lara</div>
+              <h1>Say it.<br />Defend it.</h1>
               <p>
-                Drop a topic, make your case, and LARA pushes back — in real time, out loud.
+                Drop a topic, make your case, LARA claps back in real time — out loud, no filter.
               </p>
             </div>
 
