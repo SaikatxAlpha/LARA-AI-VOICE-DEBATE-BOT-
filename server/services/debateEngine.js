@@ -28,16 +28,20 @@ export async function generateDebateResponse({
       {
         role: "user",
         content: `
-Debate topic:
+CURRENT DEBATE TOPIC:
 ${topic}
 
-Previous debate:
-${history || "No previous rounds."}
+PREVIOUS DEBATE ROUNDS:
+${history || "This is the opening round. There are no previous arguments."}
 
-Latest user argument:
+USER'S LATEST ARGUMENT:
 ${userArgument}
 
-Generate the next debate response.
+Analyze the user's latest argument in the context of the current debate topic and previous rounds.
+
+Respond as LARA's debate opponent.
+
+Follow the required response format exactly.
 `
       }
     ],
@@ -45,5 +49,6 @@ Generate the next debate response.
     max_completion_tokens: 500
   });
 
-  return completion.choices[0]?.message?.content || "I could not generate a response.";
+  return completion.choices[0]?.message?.content?.trim() ||
+    "I could not generate a response.";
 }
