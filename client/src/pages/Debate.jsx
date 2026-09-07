@@ -148,20 +148,20 @@ function Debate() {
           <div className="brand-mark">L</div>
           <div>
             <div className="logo">LARA</div>
-            <div className="nav-subtitle">AI VOICE DEBATE</div>
+            <div className="nav-subtitle">AI Voice Debate</div>
           </div>
         </div>
 
         <div className="nav-status">
           <span className="status-dot"></span>
-          SYSTEM ONLINE
+          Live
         </div>
       </header>
 
       <main className="main-layout">
         <aside className="sidebar">
           <div className="side-section">
-            <div className="side-label">SESSION</div>
+            <div className="side-label">Session</div>
 
             <div className="session-card">
               <div className="session-icon">◉</div>
@@ -173,7 +173,7 @@ function Debate() {
           </div>
 
           <div className="side-section">
-            <div className="side-label">LARA VOICE</div>
+            <div className="side-label">LARA voice</div>
 
             <select
               className="voice-select"
@@ -196,7 +196,7 @@ function Debate() {
           </div>
 
           <div className="side-section">
-            <div className="side-label">CONTROLS</div>
+            <div className="side-label">Controls</div>
 
             <button
               className="control-button"
@@ -232,10 +232,10 @@ function Debate() {
         <section className="debate-area">
           <div className="debate-header">
             <div>
-              <div className="eyebrow">INTELLIGENT DEBATE SYSTEM</div>
-              <h1>Challenge your thinking.</h1>
+              <div className="eyebrow">Your voice vs. LARA's logic</div>
+              <h1>Say it. Defend it.</h1>
               <p>
-                Present your argument. LARA will challenge it.
+                Drop a topic, make your case, and LARA pushes back — in real time, out loud.
               </p>
             </div>
 
@@ -246,7 +246,7 @@ function Debate() {
           </div>
 
           <div className="topic-panel">
-            <div className="topic-label">DEBATE TOPIC</div>
+            <div className="topic-label">Debate topic</div>
 
             <input
               value={topic}
@@ -263,17 +263,17 @@ function Debate() {
                 </div>
 
                 <div className="empty-content">
-                  <div className="empty-label">LARA IS READY</div>
-                  <h2>Start the conversation</h2>
+                  <div className="empty-label">LARA is ready</div>
+                  <h2>Open with your strongest point</h2>
                   <p>
-                    Choose a topic and present your opening argument.
-                    LARA will analyze your reasoning and challenge your position.
+                    Pick a topic and speak or type your opening argument.
+                    LARA reads your reasoning and comes back with a real rebuttal.
                   </p>
 
                   <div className="feature-row">
-                    <span>VOICE INPUT</span>
-                    <span>AI REASONING</span>
-                    <span>VOICE OUTPUT</span>
+                    <span>Voice input</span>
+                    <span>AI reasoning</span>
+                    <span>Voice output</span>
                   </div>
                 </div>
               </div>
@@ -289,7 +289,7 @@ function Debate() {
                     </div>
 
                     <div className="message-label">
-                      {message.role === "user" ? "YOUR ARGUMENT" : "LARA"}
+                      {message.role === "user" ? "Your argument" : "LARA"}
                     </div>
                   </div>
 
@@ -332,10 +332,10 @@ function Debate() {
                       <i></i>
                       <i></i>
                     </span>
-                    LARA IS SPEAKING
+                    LARA is speaking
                   </>
                 ) : (
-                  "VOICE READY"
+                  "Voice ready"
                 )}
               </div>
             </div>
@@ -358,7 +358,7 @@ function Debate() {
                 onClick={handleDebate}
                 disabled={loading}
               >
-                <span>{loading ? "THINKING" : "DEBATE"}</span>
+                <span>{loading ? "Thinking" : "DEBATE"}</span>
                 <strong>→</strong>
               </button>
             </div>
