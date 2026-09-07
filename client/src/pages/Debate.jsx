@@ -270,21 +270,32 @@ function Debate() {
         <section className="debate-area">
           <div className="debate-header">
             <div>
-              <div className="eyebrow">no cap, just facts · you vs. lara</div>
+              <div className="eyebrow"><span className="eyebrow-mark"></span> live reasoning room <span>·</span> you vs. lara</div>
               <h1>Say it.<br />Defend it.</h1>
               <p>
                 Drop a topic, make your case, LARA claps back in real time — out loud, no filter.
               </p>
+              <div className="hero-metrics" aria-label="Debate session details">
+                <span><strong>{messages.length}</strong> statements</span>
+                <span><strong>{round || 1}</strong> current round</span>
+                <span><strong>AI</strong> live opponent</span>
+              </div>
             </div>
 
             <div className="round-badge">
-              <span>ROUND</span>
+              <span>LIVE<br />ROUND</span>
               <strong>{round || 1}</strong>
             </div>
           </div>
 
           <div className="topic-panel">
-            <div className="topic-label">Debate topic</div>
+            <div className="topic-heading">
+              <div>
+                <div className="topic-label">The proposition</div>
+                <span className="topic-helper">Set the question before you make the case.</span>
+              </div>
+              <span className="topic-index">01 / 01</span>
+            </div>
 
             <input
               value={topic}
@@ -296,8 +307,13 @@ function Debate() {
           <div className="conversation">
             {messages.length === 0 ? (
               <div className="empty-state">
-                <div className="empty-orb">
-                  <span>◈</span>
+                <div className="empty-visual">
+                  <div className="empty-orb">
+                    <span>◈</span>
+                  </div>
+                  <div className="orbit orbit-one"></div>
+                  <div className="orbit orbit-two"></div>
+                  <span className="visual-caption">01 / READY</span>
                 </div>
 
                 <div className="empty-content">
