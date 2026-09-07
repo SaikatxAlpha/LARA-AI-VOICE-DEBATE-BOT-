@@ -20,6 +20,7 @@ function Debate() {
   const [voices, setVoices] = useState([]);
   const [selectedVoice, setSelectedVoice] = useState("");
   const [speaking, setSpeaking] = useState(false);
+  const [voiceMenuOpen, setVoiceMenuOpen] = useState(false);
 
   useEffect(() => {
     function loadVoices() {
@@ -143,6 +144,7 @@ function Debate() {
 
   const round = Math.ceil(messages.length / 2);
   const lastAiMessage = [...messages].reverse().find((m) => m.role === "ai");
+  const selectedVoiceDetails = voices.find((voice) => voice.name === selectedVoice);
 
   return (
     <div className="app">
@@ -186,24 +188,49 @@ function Debate() {
           <div className="side-section">
             <div className="side-label">LARA voice</div>
 
-            <select
-              className="voice-select"
-              value={selectedVoice}
-              onChange={(e) => setSelectedVoice(e.target.value)}
-            >
-              {voices.length === 0 && (
-                <option value="">Default browser voice</option>
-              )}
+            <div className={`voice-picker ${voiceMenuOpen ? "is-open" : ""}`}>
+              <button
+                type="button"
+                className="voice-picker__trigger"
+                aria-expanded={voiceMenuOpen}
+                onClick={() => setVoiceMenuOpen((open) => !open)}
+              >
+                <span className="voice-picker__icon">◌</span>
+                <span className="voice-picker__current">
+                  <strong>{selectedVoiceDetails?.name || "Default browser voice"}</strong>
+                  <small>{selectedVoiceDetails?.lang || "System voice"}</small>
+                </span>
+                <span className="voice-picker__chevron">⌄</span>
+              </button>
 
-              {voices.map((voice) => (
-                <option
-                  key={`${voice.name}-${voice.lang}`}
-                  value={voice.name}
-                >
-                  {voice.name} — {voice.lang}
-                </option>
-              ))}
-            </select>
+              {voiceMenuOpen && (
+                <div className="voice-picker__menu">
+                  <div className="voice-picker__menu-label">Available voices</div>
+
+                  {voices.length === 0 ? (
+                    <div className="voice-picker__empty">Default browser voice</div>
+                  ) : (
+                    voices.map((voice) => (
+                      <button
+                        type="button"
+                        className={`voice-option ${voice.name === selectedVoice ? "is-selected" : ""}`}
+                        key={`${voice.name}-${voice.lang}`}
+                        onClick={() => {
+                          setSelectedVoice(voice.name);
+                          setVoiceMenuOpen(false);
+                        }}
+                      >
+                        <span>
+                          <strong>{voice.name}</strong>
+                          <small>{voice.lang}</small>
+                        </span>
+                        {voice.name === selectedVoice && <b>✓</b>}
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="side-section">
