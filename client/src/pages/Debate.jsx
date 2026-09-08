@@ -50,60 +50,60 @@ function Debate() {
     };
   }, [selectedVoice]);
 
-async function handleDebate() {
-  if (loading) {
-    return;
-  }
-
-  if (!topic.trim() || !argument.trim()) {
-    alert("Please enter a topic and argument.");
-    return;
-  }
-
-  const currentTopic = topic.trim();
-  const currentArgument = argument.trim();
-
-  setLoading(true);
-  setIsDebating(true);
-
-  const history = messages
-    .slice(-10)
-    .map((message) => {
-      const speaker = message.role === "user" ? "USER" : "LARA";
-      return `${speaker}: ${message.text}`;
-    })
-    .join("\n\n");
-
-  try {
-    const result = await sendDebateArgument({
-      topic: currentTopic,
-      history,
-      userArgument: currentArgument
-    });
-
-    if (!result?.response?.trim()) {
-      throw new Error("LARA returned an empty response.");
+  async function handleDebate() {
+    if (loading) {
+      return;
     }
 
-    addMessage({
-      role: "user",
-      text: currentArgument
-    });
+    if (!topic.trim() || !argument.trim()) {
+      alert("Give LARA a topic and something to argue first.");
+      return;
+    }
 
-    addMessage({
-      role: "ai",
-      text: result.response
-    });
+    const currentTopic = topic.trim();
+    const currentArgument = argument.trim();
 
-    setArgument("");
-    speak(result.response);
-  } catch (error) {
-    console.error("Debate request failed:", error);
-    alert(error.message || "Unable to get LARA's response.");
-  } finally {
-    setLoading(false);
+    setLoading(true);
+    setIsDebating(true);
+
+    const history = messages
+      .slice(-10)
+      .map((message) => {
+        const speaker = message.role === "user" ? "USER" : "LARA";
+        return `${speaker}: ${message.text}`;
+      })
+      .join("\n\n");
+
+    try {
+      const result = await sendDebateArgument({
+        topic: currentTopic,
+        history,
+        userArgument: currentArgument
+      });
+
+      if (!result?.response?.trim()) {
+        throw new Error("LARA went quiet. Try that again.");
+      }
+
+      addMessage({
+        role: "user",
+        text: currentArgument
+      });
+
+      addMessage({
+        role: "ai",
+        text: result.response
+      });
+
+      setArgument("");
+      speak(result.response);
+    } catch (error) {
+      console.error("Debate request failed:", error);
+      alert(error.message || "LARA couldn't get a word out. Check your connection and try again.");
+    } finally {
+      setLoading(false);
+    }
   }
-}
 
   function speak(text) {
     if (!("speechSynthesis" in window)) {
@@ -159,7 +159,7 @@ async function handleDebate() {
 
       <VoiceOverlay
         open={speaking}
-        text={lastAiMessage ? lastAiMessage.text : "LARA is responding..."}
+        text={lastAiMessage ? lastAiMessage.text : "LARA is winding up..."}
         onStop={stopSpeaking}
       />
 
@@ -168,32 +168,32 @@ async function handleDebate() {
           <div className="brand-mark">L</div>
           <div>
             <div className="logo">LARA</div>
-            <div className="nav-subtitle">AI Voice Debate</div>
+            <div className="nav-subtitle">Your sparring partner</div>
           </div>
         </div>
 
         <div className="nav-status">
           <span className="status-dot"></span>
-          Live
+          In session
         </div>
       </header>
 
       <main className="main-layout">
         <aside className="sidebar">
           <div className="side-section">
-            <div className="side-label">Session</div>
+            <div className="side-label">Your corner</div>
 
             <div className="session-card">
               <div className="session-icon">◉</div>
               <div>
-                <strong>Live Debate</strong>
-                <span>{messages.length ? `${round} rounds` : "Ready to begin"}</span>
+                <strong>{messages.length ? "Bout in progress" : "Corner's empty"}</strong>
+                <span>{messages.length ? `${round} rounds in` : "Give her a topic to start"}</span>
               </div>
             </div>
           </div>
 
           <div className="side-section">
-            <div className="side-label">LARA voice</div>
+            <div className="side-label">LARA's voice</div>
 
             <div className={`voice-picker ${voiceMenuOpen ? "is-open" : ""}`}>
               <button
@@ -212,7 +212,7 @@ async function handleDebate() {
 
               {voiceMenuOpen && (
                 <div className="voice-picker__menu">
-                  <div className="voice-picker__menu-label">Available voices</div>
+                  <div className="voice-picker__menu-label">Pick who's talking back</div>
 
                   {voices.length === 0 ? (
                     <div className="voice-picker__empty">Default browser voice</div>
@@ -248,7 +248,7 @@ async function handleDebate() {
               onClick={speaking ? stopSpeaking : () => messages.length && speak(messages[messages.length - 1].text)}
             >
               <span>{speaking ? "■" : "▶"}</span>
-              {speaking ? "Stop Speaking" : "Replay LARA"}
+              {speaking ? "Cut her off" : "Replay last line"}
             </button>
 
             <button
@@ -256,7 +256,7 @@ async function handleDebate() {
               onClick={handleReset}
             >
               <span>↻</span>
-              New Debate
+              Clear the ring
             </button>
           </div>
 
@@ -267,8 +267,8 @@ async function handleDebate() {
               </div>
 
               <div>
-                <strong>LARA AI</strong>
-                <span>{speaking ? "Speaking..." : "Listening..."}</span>
+                <strong>LARA</strong>
+                <span>{speaking ? "Talking now" : "Waiting on you"}</span>
               </div>
             </div>
           </div>
@@ -277,20 +277,21 @@ async function handleDebate() {
         <section className="debate-area">
           <div className="debate-header">
             <div>
-              <div className="eyebrow"><span className="eyebrow-mark"></span> live reasoning room <span>·</span> you vs. lara</div>
-              <h1>Say it.<br />Defend it.</h1>
+              <div className="tagline">you vs. an opponent who never gets tired</div>
+              <h1>Pick a fight.<br />Back it up.</h1>
               <p>
-                Drop a topic, make your case, LARA claps back in real time — out loud, no filter.
+                Throw out a topic, make your opening move, and LARA swings back
+                immediately — out loud, with no script and no mercy.
               </p>
               <div className="hero-metrics" aria-label="Debate session details">
-                <span><strong>{messages.length}</strong> statements</span>
-                <span><strong>{round || 1}</strong> current round</span>
-                <span><strong>AI</strong> live opponent</span>
+                <span><strong>{messages.length}</strong> lines thrown</span>
+                <span><strong>{round || 1}</strong> round underway</span>
+                <span><strong>0</strong> takebacks</span>
               </div>
             </div>
 
             <div className="round-badge">
-              <span>LIVE<br />ROUND</span>
+              <span>Round</span>
               <strong>{round || 1}</strong>
             </div>
           </div>
@@ -298,16 +299,15 @@ async function handleDebate() {
           <div className="topic-panel">
             <div className="topic-heading">
               <div>
-                <div className="topic-label">The proposition</div>
-                <span className="topic-helper">Set the question before you make the case.</span>
+                <div className="topic-label">Tonight's motion</div>
+                <span className="topic-helper">Set what you're fighting about before you swing.</span>
               </div>
-              <span className="topic-index">01 / 01</span>
             </div>
 
             <input
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
-              placeholder="Enter the topic you want to debate..."
+              placeholder="e.g. Cereal is a soup"
             />
           </div>
 
@@ -320,21 +320,21 @@ async function handleDebate() {
                   </div>
                   <div className="orbit orbit-one"></div>
                   <div className="orbit orbit-two"></div>
-                  <span className="visual-caption">01 / READY</span>
                 </div>
 
                 <div className="empty-content">
-                  <div className="empty-label">LARA is ready</div>
-                  <h2>Open with your strongest point</h2>
+                  <div className="empty-label">Corner's clear</div>
+                  <h2>Throw the first punch</h2>
                   <p>
-                    Pick a topic and speak or type your opening argument.
-                    LARA reads your reasoning and comes back with a real rebuttal.
+                    Set a topic above, then speak or type your opening argument.
+                    LARA actually reads what you said and swings back with a real rebuttal —
+                    not a summary of your point.
                   </p>
 
                   <div className="feature-row">
-                    <span>Voice input</span>
-                    <span>AI reasoning</span>
-                    <span>Voice output</span>
+                    <span>Speak it</span>
+                    <span>Get real pushback</span>
+                    <span>Hear her fire back</span>
                   </div>
                 </div>
               </div>
@@ -350,7 +350,7 @@ async function handleDebate() {
                     </div>
 
                     <div className="message-label">
-                      {message.role === "user" ? "Your argument" : "LARA"}
+                      {message.role === "user" ? "You said" : "LARA fires back"}
                     </div>
                   </div>
 
@@ -365,14 +365,14 @@ async function handleDebate() {
               <div className="message ai loading-message">
                 <div className="message-top">
                   <div className="message-avatar">L</div>
-                  <div className="message-label">LARA</div>
+                  <div className="message-label">LARA fires back</div>
                 </div>
 
                 <div className="thinking">
                   <span></span>
                   <span></span>
                   <span></span>
-                  <em>Analyzing your argument...</em>
+                  <em>Lining up a comeback...</em>
                 </div>
               </div>
             )}
@@ -393,17 +393,17 @@ async function handleDebate() {
                       <i></i>
                       <i></i>
                     </span>
-                    LARA is speaking
+                    LARA is talking
                   </>
                 ) : (
-                  "Voice ready"
+                  "Mic's ready when you are"
                 )}
               </div>
             </div>
 
             <div className="composer-box">
               <textarea
-                placeholder="Present your argument..."
+                placeholder="What's your move?"
                 value={argument}
                 onChange={(e) => setArgument(e.target.value)}
                 onKeyDown={(e) => {
@@ -419,13 +419,13 @@ async function handleDebate() {
                 onClick={handleDebate}
                 disabled={loading}
               >
-                <span>{loading ? "Thinking" : "DEBATE"}</span>
+                <span>{loading ? "Sending" : "Swing"}</span>
                 <strong>→</strong>
               </button>
             </div>
 
             <div className="composer-hint">
-              Press Enter to send · Shift + Enter for a new line
+              Enter to send, Shift + Enter for a new line.
             </div>
           </div>
         </section>

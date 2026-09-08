@@ -1,6 +1,12 @@
 import Groq from "groq-sdk";
 import { DEBATE_SYSTEM_PROMPT } from "../prompts/debatePrompt.js";
 
+const GROQ_MODELS = [
+  "llama-3.3-70b-versatile",
+  "meta-llama/llama-4-scout-17b-16e-instruct",
+  "openai/gpt-oss-20b"
+];
+
 function getGroqClient() {
   if (!process.env.GROQ_API_KEY) {
     throw new Error("GROQ_API_KEY is missing. Check server/.env");
@@ -9,6 +15,56 @@ function getGroqClient() {
   return new Groq({
     apiKey: process.env.GROQ_API_KEY
   });
+}
+
+function normalizeText(value) {
+  if (typeof value === "string") {
+    return value.trim();
+  }
+
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => normalizeText(item))
+      .filter(Boolean)
+      .join("\n")
+      .trim();
+  }
+
+  if (value && typeof value === "object") {
+    if (typeof value.text === "string") {
+      return value.text.trim();
+    }
+
+    if (typeof value.content === "string") {
+      return value.content.trim();
+    }
+
+    if (Array.isArray(value.content)) {
+      return normalizeText(value.content);
+    }
+  }
+
+  return "";
+}
+
+async function createDebateCompletion(groq, messages) {
+  let lastError = null;
+
+  for (const model of GROQ_MODELS) {
+    try {
+      return await groq.chat.completions.create({
+        model,
+        messages,
+        temperature: 0.7,
+        max_tokens: 700
+      });
+    } catch (error) {
+      lastError = error;
+      console.warn(`Groq model ${model} failed, retrying with fallback model.`, error?.message || error);
+    }
+  }
+
+  throw lastError || new Error("Groq failed to generate a response.");
 }
 
 export async function generateDebateResponse({
@@ -41,13 +97,7 @@ export async function generateDebateResponse({
     content: `The user's latest argument is:\n${userArgument}\n\nRespond as LARA's debate opponent. Give a strong counterargument and exactly one challenging question.`
   });
 
-  const completion = await groq.chat.completions.create({
-    model: "openai/gpt-oss-20b",
-    messages,
-    temperature: 0.7,
-    max_completion_tokens: 700
-  });
-
+  const completion = await createDebateCompletion(groq, messages);
   const message = completion.choices?.[0]?.message;
 
   if (!message) {
@@ -55,9 +105,10 @@ export async function generateDebateResponse({
   }
 
   const response =
-    typeof message.content === "string"
-      ? message.content.trim()
-      : "";
+    normalizeText(message.content) ||
+    normalizeText(message.reasoning) ||
+    normalizeText(completion?.output_text) ||
+    normalizeText(message);
 
   if (!response) {
     throw new Error("Groq returned no text content.");

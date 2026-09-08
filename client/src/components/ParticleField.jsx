@@ -80,7 +80,7 @@ function ParticleField({ active }) {
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(255,255,255,0.55)";
+        ctx.fillStyle = "rgba(224,182,84,0.55)";
         ctx.fill();
       }
 
@@ -96,7 +96,7 @@ function ParticleField({ active }) {
             ctx.beginPath();
             ctx.moveTo(a.x, a.y);
             ctx.lineTo(b.x, b.y);
-            ctx.strokeStyle = `rgba(255,255,255,${0.14 * (1 - dist / linkDist)})`;
+            ctx.strokeStyle = `rgba(224,182,84,${0.14 * (1 - dist / linkDist)})`;
             ctx.lineWidth = 1;
             ctx.stroke();
           }
