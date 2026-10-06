@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import debateRoutes from "./routes/debateRoutes.js";
+import avatarRoutes from "./routes/avatarRoutes.js";
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api", debateRoutes);
+app.use("/api", avatarRoutes);
 
 app.listen(PORT, () => {
   console.log(`LARA server running on http://localhost:${PORT}`);

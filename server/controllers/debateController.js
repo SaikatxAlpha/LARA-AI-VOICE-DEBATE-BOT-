@@ -47,16 +47,28 @@ function normalizeText(value) {
   return "";
 }
 
+const LEVEL_GUIDANCE = {
+  beginner:
+    "Beginner. Use plain, friendly language. Make one clear counterpoint and ask a simple, approachable question. Keep the whole response to about three short sentences.",
+  intermediate:
+    "Intermediate. Be balanced and challenging. Make two focused counterpoints and ask a question that tests the user's reasoning. Keep the whole response to about five sentences.",
+  advanced:
+    "Advanced. Be rigorous. Probe assumptions, evidence quality, trade-offs and logical gaps, and ask a demanding question. Keep the whole response to about seven sentences."
+};
+
 async function createDebateCompletion(groq, messages) {
   let lastError = null;
 
   for (const model of GROQ_MODELS) {
+    const isReasoningModel = model.startsWith("openai/gpt-oss");
+
     try {
       return await groq.chat.completions.create({
         model,
         messages,
         temperature: 0.7,
-        max_tokens: 700
+        max_tokens: isReasoningModel ? 2000 : 700,
+        ...(isReasoningModel && { reasoning_effort: "low" })
       });
     } catch (error) {
       lastError = error;
@@ -69,10 +81,22 @@ async function createDebateCompletion(groq, messages) {
 
 export async function generateDebateResponse({
   topic,
+  field,
+  level,
   history,
   userArgument
 }) {
   const groq = getGroqClient();
+
+  const debateContext = [`The debate topic is: ${topic}`];
+
+  if (field) {
+    debateContext.push(`Debate field: ${field}`);
+  }
+
+  if (LEVEL_GUIDANCE[level]) {
+    debateContext.push(`Difficulty level: ${LEVEL_GUIDANCE[level]}`);
+  }
 
   const messages = [
     {
@@ -81,7 +105,7 @@ export async function generateDebateResponse({
     },
     {
       role: "user",
-      content: `The debate topic is: ${topic}`
+      content: debateContext.join("\n")
     }
   ];
 
@@ -106,7 +130,6 @@ export async function generateDebateResponse({
 
   const response =
     normalizeText(message.content) ||
-    normalizeText(message.reasoning) ||
     normalizeText(completion?.output_text) ||
     normalizeText(message);
 
@@ -119,7 +142,7 @@ export async function generateDebateResponse({
 
 export async function debate(req, res) {
   try {
-    const { topic, history, userArgument } = req.body;
+    const { topic, field, level, history, userArgument } = req.body;
 
     if (!topic?.trim() || !userArgument?.trim()) {
       return res.status(400).json({
@@ -130,6 +153,8 @@ export async function debate(req, res) {
 
     const response = await generateDebateResponse({
       topic: topic.trim(),
+      field: typeof field === "string" ? field.trim().slice(0, 60) : "",
+      level,
       history,
       userArgument: userArgument.trim()
     });

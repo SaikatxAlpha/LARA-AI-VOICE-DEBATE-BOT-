@@ -1,83 +1,26 @@
-import { useEffect, useRef, useState } from "react";
+import { useDebate } from "../context/DebateContext";
+import Icon from "./Icon";
 
-function VoiceRecorder({ onTranscript }) {
-  const recognitionRef = useRef(null);
-  const [listening, setListening] = useState(false);
-  const [supported, setSupported] = useState(true);
+function VoiceRecorder() {
+  const { session, mic, toggleListening } = useDebate();
 
-  useEffect(() => {
-    const SpeechRecognition =
-      window.SpeechRecognition ||
-      window.webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-      setSupported(false);
-      return;
-    }
-
-    const recognition = new SpeechRecognition();
-
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.lang = "en-US";
-
-    recognition.onstart = () => {
-      setListening(true);
-    };
-
-    recognition.onend = () => {
-      setListening(false);
-    };
-
-    recognition.onerror = (event) => {
-      console.error("Speech recognition error:", event.error);
-      setListening(false);
-    };
-
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      onTranscript(transcript);
-    };
-
-    recognitionRef.current = recognition;
-
-    return () => {
-      recognition.abort();
-    };
-  }, [onTranscript]);
-
-  function toggleRecording() {
-    if (!recognitionRef.current) {
-      return;
-    }
-
-    if (listening) {
-      recognitionRef.current.stop();
-      return;
-    }
-
-    try {
-      recognitionRef.current.start();
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  if (!supported) {
-    return (
-      <span className="voice-not-supported">
-        Voice recognition unavailable
-      </span>
-    );
-  }
+  const label = !mic.supported
+    ? "Voice input unavailable in this browser"
+    : mic.listening
+      ? "Stop listening"
+      : "Speak your argument";
 
   return (
     <button
       type="button"
-      className={`voice-button ${listening ? "active" : ""}`}
-      onClick={toggleRecording}
+      className={`mic-button ${mic.listening ? "is-listening" : ""}`}
+      onClick={toggleListening}
+      disabled={!session || !mic.supported}
+      aria-pressed={mic.listening}
+      aria-label={label}
+      title={label}
     >
-      {listening ? "● Listening..." : "🎙 Speak"}
+      <Icon name="mic" size={20} />
     </button>
   );
 }
